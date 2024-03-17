@@ -16,11 +16,18 @@ register_plugin!(State);
 impl ZellijPlugin for State {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
         self.userspace_configuration = configuration;
-        // we need the ReadApplicationState permission to receive the ModeUpdate and TabUpdate
-        // events
-        // we need the RunCommands permission to run "cargo test" in a floating window
-        request_permission(&[PermissionType::ReadApplicationState, PermissionType::RunCommands]);
-        subscribe(&[EventType::ModeUpdate, EventType::TabUpdate, EventType::Key]);
+        request_permission(&[
+            PermissionType::ReadApplicationState,
+            PermissionType::ChangeApplicationState,
+            PermissionType::OpenFiles,
+            PermissionType::RunCommands,
+            PermissionType::OpenTerminalsOrPlugins,
+            PermissionType::WriteToStdin,
+            // PermissionType::WebAccess,
+            // PermissionType::ReadCliPipes,
+            // PermissionType::MessageAndLaunchOtherPlugins,
+        ]);
+        subscribe(&[EventType::ModeUpdate, EventType::TabUpdate, EventType::Key, EventType::PaneUpdate,]);
     }
 
     fn update(&mut self, event: Event) -> bool {
@@ -39,11 +46,12 @@ impl ZellijPlugin for State {
             Event::Key(key) => {
                 if let Key::Char('n') = key {
                     self.test_runs += 1;
+                    let current_dir = std::env::current_dir().ok(); // Get the current directory
                     open_command_pane_floating(CommandToRun {
                         path: "cargo".into(),
                         args: vec!["test".to_owned()],
-                        cwd: None,
-                    });
+                        cwd: current_dir, // Use the current directory
+                    })
                 }
             }
             _ => (),

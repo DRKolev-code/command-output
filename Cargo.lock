@@ -388,6 +388,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "54261aba646433cb567ec89844be4c4825ca92a4f8afba52fc4dd88436e31bbd"
 
 [[package]]
+name = "command-output"
+version = "0.1.0"
+dependencies = [
+ "ansi_term",
+ "chrono",
+ "zellij-tile",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1760,15 +1769,6 @@ dependencies = [
  "byteorder",
  "rmp",
  "serde",
-]
-
-[[package]]
-name = "rust-plugin-example"
-version = "0.1.0"
-dependencies = [
- "ansi_term",
- "chrono",
- "zellij-tile",
 ]
 
 [[package]]
