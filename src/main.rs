@@ -4,15 +4,16 @@ use zellij_tile::prelude::*;
 use std::collections::{HashMap, BTreeMap};
 
 #[derive(Default)]
-struct CommandOutput {
+struct State {
     mode_log: HashMap<String, usize>,
     tabs: Vec<String>,
     test_runs: usize,
     userspace_configuration: BTreeMap<String, String>,
 }
 
+register_plugin!(State);
 
-impl ZellijPlugin for CommandOutput {
+impl ZellijPlugin for State {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
         self.userspace_configuration = configuration;
         request_permission(&[
@@ -42,11 +43,11 @@ impl ZellijPlugin for CommandOutput {
             Event::Key(key) => {
                 if let Key::Char('n') = key {
                     self.test_runs += 1;
-                    let current_dir = std::env::current_dir().ok(); // Get the current directory
+
                     open_command_pane_floating(CommandToRun {
                         path: "cargo".into(),
                         args: vec!["test".to_owned()],
-                        cwd: current_dir, // Use the current directory
+                        cwd: std::env::current_dir().ok(),
                     },
                     None)
                 }
@@ -57,12 +58,24 @@ impl ZellijPlugin for CommandOutput {
     }
 
     fn render(&mut self, rows: usize, cols: usize) {
+        // A new tab
+        // A pane for wriitng commands
+        // A pane for the output
+
+
+        
         let colored_rows = color_bold(CYAN, &rows.to_string());
         let colored_cols = color_bold(CYAN, &cols.to_string());
         println!("");
         println!("I have {} rows and {} columns", colored_rows, colored_cols);
         println!("");
         println!("{} {:#?}", color_bold(GREEN, "I was started with the following user configuration:"), self.userspace_configuration);
+        println!("");
+        let current_dir = std::env::current_dir().ok().map(|p| p.to_string_lossy().into_owned());
+        match current_dir {
+            Some(path) => println!("{}", path),
+            None => println!("Could not determine current directory"),
+        }
         println!("");
         println!("{}", color_bold(GREEN, "Modes:"));
         for (mode, count) in &self.mode_log {
@@ -81,7 +94,6 @@ impl ZellijPlugin for CommandOutput {
     }
 }
 
-register_plugin!(CommandOutput);
 
 pub const CYAN: u8 = 51;
 pub const GRAY_LIGHT: u8 = 238;
