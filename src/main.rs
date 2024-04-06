@@ -4,16 +4,15 @@ use zellij_tile::prelude::*;
 use std::collections::{HashMap, BTreeMap};
 
 #[derive(Default)]
-struct State {
+struct CommandOutput {
     mode_log: HashMap<String, usize>,
     tabs: Vec<String>,
     test_runs: usize,
     userspace_configuration: BTreeMap<String, String>,
 }
 
-register_plugin!(State);
 
-impl ZellijPlugin for State {
+impl ZellijPlugin for CommandOutput {
     fn load(&mut self, configuration: BTreeMap<String, String>) {
         self.userspace_configuration = configuration;
         request_permission(&[
@@ -23,9 +22,6 @@ impl ZellijPlugin for State {
             PermissionType::RunCommands,
             PermissionType::OpenTerminalsOrPlugins,
             PermissionType::WriteToStdin,
-            // PermissionType::WebAccess,
-            // PermissionType::ReadCliPipes,
-            // PermissionType::MessageAndLaunchOtherPlugins,
         ]);
         subscribe(&[EventType::ModeUpdate, EventType::TabUpdate, EventType::Key, EventType::PaneUpdate,]);
     }
@@ -51,7 +47,8 @@ impl ZellijPlugin for State {
                         path: "cargo".into(),
                         args: vec!["test".to_owned()],
                         cwd: current_dir, // Use the current directory
-                    })
+                    },
+                    None)
                 }
             }
             _ => (),
@@ -83,6 +80,8 @@ impl ZellijPlugin for State {
         }
     }
 }
+
+register_plugin!(CommandOutput);
 
 pub const CYAN: u8 = 51;
 pub const GRAY_LIGHT: u8 = 238;
